@@ -1,9 +1,11 @@
 import 'package:chat_app/chat/chat_screen.dart';
+import 'package:chat_app/models/message_model.dart';
 import 'package:chat_app/models/room_model.dart';
 import 'package:chat_app/models/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 
 class ChatCard extends StatelessWidget {
   const ChatCard({
@@ -23,31 +25,62 @@ class ChatCard extends StatelessWidget {
             .doc(userId)
             .snapshots(),
         builder: (context, snapshot) {
-          
           if (snapshot.hasData) {
             ChatUser chatUser = ChatUser.fromJson(snapshot.data!.data()!);
             return Card(
               child: ListTile(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ChatScreen(
-                                roomId: item.id!,
-                                chatUser: chatUser,
-                              )));
-                },
-                leading: const CircleAvatar(),
-                title:  Text( chatUser.name!),
-                subtitle:  Text(item.lastMessage! == '' ? chatUser.about! : item.lastMessage!),
-                trailing: 1 / 1 != 0
-                    ? const Badge(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        label: Text('3'),
-                        largeSize: 30,
-                      )
-                    : Text(item.lastMessageTime!),
-              ),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ChatScreen(
+                                  roomId: item.id!,
+                                  chatUser: chatUser,
+                                )));
+                  },
+                  leading: const CircleAvatar(),
+                  title: Text(chatUser.name!),
+                  subtitle: Text(
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    item.lastMessage! == ''
+                      ? chatUser.about!
+                      : item.lastMessage!),
+                  trailing: StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection('rooms')
+                          .doc(item.id!)
+                          .collection('messages')
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final unreadList = snapshot.data?.docs
+                              .map((e) => Message.fromJson(e.data()))
+                              .where((element) => element.read == '')
+                              .where((element) =>
+                                  element.fromId !=
+                                  FirebaseAuth.instance.currentUser!.uid)??[];
+                          return unreadList.isNotEmpty
+                              ? Badge(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  label: Text(unreadList.length.toString()),
+                                  largeSize: 30,
+                                )
+                                : const SizedBox();
+                              // : Text(DateFormat.yMMMEd()
+                              //     .format(
+                              //       DateTime.fromMillisecondsSinceEpoch(
+                              //         int.parse(
+                              //           item.lastMessageTime!.toString(),
+                              //         ),
+                              //       ),
+                              //     )
+                              //     .toString());
+                        }else{
+                          return const SizedBox();
+                        }
+                      })),
             );
           } else {
             return Container();

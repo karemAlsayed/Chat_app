@@ -1,4 +1,6 @@
 
+// ignore_for_file: avoid_print
+
 import 'package:chat_app/screens/auth/password_reset_screen.dart';
 
 import 'package:chat_app/utils/colors.dart';

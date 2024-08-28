@@ -25,9 +25,9 @@ class FireData {
       if (roomExist.docs.isEmpty) {
         ChatRoom chatRoom = ChatRoom(
           id: members.toString(),
-          createdAt: DateTime.now().toString(),
+          createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
           lastMessage: '',
-          lastMessageTime: DateTime.now().toString(),
+          lastMessageTime: DateTime.now().millisecondsSinceEpoch.toString(),
           members: members,
         );
 
@@ -39,19 +39,52 @@ class FireData {
     }
   }
 
-  sendMessage( String uId, String msg, String roomId) async {
+  sendMessage(String uId, String msg, String roomId, {String? type}) async {
     String msgId = const Uuid().v1();
     Message message = Message(
-
       id: msgId,
       toId: uId,
       fromId: myUid,
       msg: msg,
-      type: 'text',
-      createdAt: DateTime.now().toString(),
+      type: type ?? 'text',
+      createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
       read: '',
     );
 
-   await  firestore.collection('rooms').doc(roomId).collection('messages').doc(msgId).set(message.toJson());
+    await firestore
+        .collection('rooms')
+        .doc(roomId)
+        .collection('messages')
+        .doc(msgId)
+        .set(message.toJson());
+
+    firestore.collection('rooms').doc(roomId).update({
+      'last_message':type?? msg,
+      'last_message_time': DateTime.now().millisecondsSinceEpoch.toString()
+    });
   }
+
+  Future readMessage(String roomId, String msgId) async {
+    firestore
+        .collection('rooms')
+        .doc(roomId)
+        .collection('messages')
+        .doc(msgId)
+        .update({'read': DateTime.now().millisecondsSinceEpoch.toString()});
+  }
+  deleteMsg( String roomId, List<String> msgs) async {
+    for (var msg in msgs) {
+      await firestore
+          .collection('rooms')
+          .doc(roomId)
+          .collection('messages')
+          .doc(msg)
+          .delete();
+    }
+  
+  }
+
+
+
+
 }

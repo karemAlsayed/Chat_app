@@ -94,21 +94,26 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                       .collection('rooms')
                       .where('members',
                           arrayContains: FirebaseAuth.instance.currentUser!.uid)
-                      // .orderBy('last_message_time', descending: true)
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       List<ChatRoom> items = snapshot.data!.docs.map((e) {
                         return ChatRoom.fromJson(e.data());
-                      }).toList()..sort( (a, b) => b.lastMessageTime!.compareTo(a.lastMessageTime!),);
-                      return ListView.builder(
-                        itemCount: items.length,
-                        itemBuilder: (context, index) {
-                          return  ChatCard(
-                            item: items[index],
-                          );
-                        },
-                      );
+                      }).toList()
+                        ..sort(
+                          (a, b) =>
+                              b.lastMessageTime!.compareTo(a.lastMessageTime!),
+                        );
+                      return items.isNotEmpty
+                          ? ListView.builder(
+                              itemCount: items.length,
+                              itemBuilder: (context, index) {
+                                return ChatCard(
+                                  item: items[index],
+                                );
+                              },
+                            )
+                          : const NoChatsWidget();
                     } else {
                       return const Center(
                         child: CircularProgressIndicator(),
@@ -119,6 +124,44 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class NoChatsWidget extends StatelessWidget {
+  const NoChatsWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+        children: [
+          const Center(
+            child: Text('No Chats', style: TextStyle(fontSize: 20)),
+          ),
+          Positioned(
+            bottom: 10,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+    
+                
+                Text('Click Here To Start Chatting',style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  color: Colors.white
+                )),
+                const Icon(
+                  Iconsax.arrow_right,
+                  size: 50,
+                
+                ),
+                const SizedBox(width: 70,)
+              ],
+            ),
+          )
+        ],
     );
   }
 }
