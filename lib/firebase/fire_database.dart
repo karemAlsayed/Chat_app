@@ -72,18 +72,23 @@ class FireData {
         .doc(msgId)
         .update({'read': DateTime.now().millisecondsSinceEpoch.toString()});
   }
-  deleteMsg( String roomId, List<String> msgs) async {
-    for (var msg in msgs) {
+Future<void> deleteMsg(String roomId, List<String> msgs) async {
+  List<Future<void>> futures = msgs.map((msg) async {
+    try {
       await firestore
           .collection('rooms')
           .doc(roomId)
           .collection('messages')
           .doc(msg)
           .delete();
+    } catch (e) {
+      print('Failed to delete msg $msg: $e');
+      // Handle error (e.g., log it, rethrow it, etc.)
     }
-  
-  }
+  }).toList();
 
+  await Future.wait(futures);
+}
 
 
 
