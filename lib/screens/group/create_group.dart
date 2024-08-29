@@ -1,4 +1,8 @@
+import 'package:chat_app/firebase/fire_database.dart';
+import 'package:chat_app/models/user_model.dart';
 import 'package:chat_app/widgets/custom_text_field.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -11,11 +15,27 @@ class CreateGroup extends StatefulWidget {
 
 class _CreateGroupState extends State<CreateGroup> {
   TextEditingController controller = TextEditingController();
+  List<String> members = [];
+  List myContacts = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {}, label: const Text('Done'), icon: const Icon(Iconsax.tick_circle)),
+      floatingActionButton: members.isEmpty
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () {
+                FireData().createGroup(controller.text, members).then(
+                  (value) {
+                    Navigator.pop(context);
+                    setState(() {
+                      members = [];
+                      controller.clear();
+                    });
+                  },
+                );
+              },
+              label: const Text('Done'),
+              icon: const Icon(Iconsax.tick_circle)),
       appBar: AppBar(
         title: const Text('Create Group'),
       ),
@@ -84,30 +104,67 @@ class _CreateGroupState extends State<CreateGroup> {
               height: 20,
             ),
             Expanded(
-              child: ListView(
-                children: [
-                  CheckboxListTile(
-                      checkboxShape: const CircleBorder(),
-                      title: const Text('Add Members'),
-                      value: true,
-                      onChanged: (value) {}),
-                  CheckboxListTile(
-                      checkboxShape: const CircleBorder(),
-                      title: const Text('Add Members'),
-                      value: false,
-                      onChanged: (value) {}),
-                  CheckboxListTile(
-                      checkboxShape: const CircleBorder(),
-                      title: const Text('Add Members'),
-                      value: true,
-                      onChanged: (value) {}),
-                  CheckboxListTile(
-                      checkboxShape: const CircleBorder(),
-                      title: const Text('Add Members'),
-                      value: false,
-                      onChanged: (value) {}),
-                ],
-              ),
+              child: StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(FirebaseAuth.instance.currentUser!.uid)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      myContacts = snapshot.data!.data()!['my_users'];
+
+                      return StreamBuilder(
+                          stream: FirebaseFirestore.instance
+                              .collection('users')
+                              .where('id',
+                                  whereIn:
+                                      myContacts.isEmpty ? [''] : myContacts)
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              final List<ChatUser> items = snapshot.data!.docs
+                                  .map((e) => ChatUser.fromJson(e.data()))
+                                  .where(
+                                    (element) =>
+                                        element.id !=
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                  )
+                                  .toList()
+                                ..sort(
+                                  (a, b) => a.name!.compareTo(b.name!),
+                                );
+                              return ListView.builder(
+                                itemCount: items.length,
+                                itemBuilder: (context, index) {
+                                  return CheckboxListTile(
+                                    checkboxShape: const CircleBorder(),
+                                    title: Text(items[index].name!),
+                                    value: members.contains(items[index].id),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        if (value!) {
+                                          members.add(items[index].id!);
+                                        } else {
+                                          members.remove(items[index].id!);
+                                        }
+                                      });
+                                    },
+                                  );
+                                },
+                              );
+                            } else {
+                              return Center(
+                                child: Container(),
+                              );
+                            }
+                          });
+                    } else {
+                      return Center(
+                        child: Container(),
+                      );
+                    }
+                  }),
+              
             )
           ],
         ),

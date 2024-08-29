@@ -3,13 +3,15 @@
 
 
 
+import 'package:chat_app/models/group_model.dart';
 import 'package:chat_app/screens/group/group_screen.dart';
 import 'package:flutter/material.dart';
 
 class GroupCard extends StatelessWidget {
   const GroupCard({
-    super.key,
+    super.key, required this.group,
   });
+  final GroupRoom group;
 
   @override
   Widget build(BuildContext context) {
@@ -17,13 +19,15 @@ class GroupCard extends StatelessWidget {
       
       child: ListTile(
         onTap: () {
-           Navigator.push(context, MaterialPageRoute(builder: (context) => const GroupScreen()));
+           Navigator.push(context, MaterialPageRoute(builder: (context) => GroupScreen(
+             chatGroup: group,
+           )));
         },
-        leading: const CircleAvatar(
-          child: Text('G'),
+        leading:  CircleAvatar(
+          child: Text(group.name![0].toUpperCase()),
         ),
-        title: const Text('Name'),
-        subtitle: const Text('Last Message'),
+        title:  Text(group.name!),
+        subtitle:  Text(group.lastMessage??'Start Conversation', maxLines: 1, overflow: TextOverflow.ellipsis),
         trailing: const Badge(
           padding: EdgeInsets.symmetric(horizontal: 12),
           label: Text('3'),

@@ -19,6 +19,7 @@ class FireAuth {
       lastActivated: DateTime.now().millisecondsSinceEpoch.toString(),
       pushToken: '',
       online: false,
+      myUsers: [],
     );
     await  firebaseFirestore.collection('users').doc(user.uid).set(chatUser.toJson());
   }

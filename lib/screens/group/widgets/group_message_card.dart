@@ -4,24 +4,29 @@
 
 
 
+import 'package:chat_app/models/message_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
 class GroupMessageCard extends StatelessWidget {
   const GroupMessageCard({
-    super.key, required this.index,
+    super.key, required this.index, required this.message,
   });
   
+  final Message message;
   final int index;
 
   @override
   Widget build(BuildContext context) {
+    bool isMe = message.fromId == FirebaseAuth.instance.currentUser!.uid;
     return Row(
-      mainAxisAlignment: index % 2 == 0
+      mainAxisAlignment: isMe
           ? MainAxisAlignment.end
           : MainAxisAlignment.start,
       children: [
-        index % 2 == 0
+        isMe
             ? IconButton(
                 onPressed: () {},
                 icon: const Icon(Iconsax.message_edit))
@@ -29,14 +34,14 @@ class GroupMessageCard extends StatelessWidget {
         Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(index % 2 == 0 ? 16 : 0),
+              topLeft: Radius.circular(isMe ? 16 : 0),
               bottomRight: const Radius.circular(16),
               bottomLeft: const Radius.circular(16),
               topRight:
-                  Radius.circular(index % 2 == 0 ? 0 : 16),
+                  Radius.circular(isMe ? 0 : 16),
             ),
           ),
-          color: index % 2 == 0
+          color: isMe
               ? Theme.of(context).colorScheme.surface
               : Theme.of(context).colorScheme.primaryContainer,
           child: Padding(
@@ -48,28 +53,33 @@ class GroupMessageCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   index % 2 == 0 ? const SizedBox() : Text(
-                    'Ahmed',
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelSmall
-                        ?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const Text(
-                      'messagellkjhgfsrtopopijjhhghfdggfhjk'),
+                   isMe ? const SizedBox() : StreamBuilder(
+                     stream: FirebaseFirestore.instance.collection('users').doc(message.fromId).snapshots(),
+                     builder: (context, snapshot) {
+                       return snapshot.hasData ?Text(
+                        snapshot.data!.data()!['name'],
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelSmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                                         ):Container();
+                     }
+                   ),
+                   Text(
+                      message.msg!),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      index % 2 == 0
+                      isMe
                           ? const Icon(Iconsax.tick_circle,
                               color: Colors.grey)
                           : const SizedBox(),
                       const SizedBox(width: 8),
                       Text(
-                        '5:30 AM',
+                        message.createdAt!,
                         style: Theme.of(context)
                             .textTheme
                             .labelSmall

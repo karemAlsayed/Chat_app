@@ -9,13 +9,15 @@ class CustomTextField extends StatefulWidget {
     required this.prefixIcon,
     required this.controller,
     required this.obscureText,
-    required this.isPassword,
+    required this.isPassword, this.onChanged,
+
   });
   final String label;
   final IconData prefixIcon;
   final TextEditingController controller;
   final bool obscureText;
   final bool isPassword;
+  final void Function(String)? onChanged;
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -27,6 +29,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      onChanged:widget.onChanged ,
       validator: (value) => value!.isEmpty ? 'Field cannot be empty' : null,
       controller: widget.controller,
       obscureText: widget.obscureText? !showPassword : false,

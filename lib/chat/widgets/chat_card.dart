@@ -6,7 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-
 class ChatCard extends StatelessWidget {
   const ChatCard({
     super.key,
@@ -16,9 +15,10 @@ class ChatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String userId = item.members!
+    List member = item.members!
         .where((element) => element != FirebaseAuth.instance.currentUser!.uid)
-        .first;
+        .toList();
+        String userId = member.isEmpty ?FirebaseAuth.instance.currentUser!.uid:member.first;
     return StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('users')
@@ -41,11 +41,11 @@ class ChatCard extends StatelessWidget {
                   leading: const CircleAvatar(),
                   title: Text(chatUser.name!),
                   subtitle: Text(
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    item.lastMessage! == ''
-                      ? chatUser.about!
-                      : item.lastMessage!),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      item.lastMessage! == ''
+                          ? chatUser.about!
+                          : item.lastMessage!),
                   trailing: StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('rooms')
@@ -55,11 +55,12 @@ class ChatCard extends StatelessWidget {
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           final unreadList = snapshot.data?.docs
-                              .map((e) => Message.fromJson(e.data()))
-                              .where((element) => element.read == '')
-                              .where((element) =>
-                                  element.fromId !=
-                                  FirebaseAuth.instance.currentUser!.uid)??[];
+                                  .map((e) => Message.fromJson(e.data()))
+                                  .where((element) => element.read == '')
+                                  .where((element) =>
+                                      element.fromId !=
+                                      FirebaseAuth.instance.currentUser!.uid) ??
+                              [];
                           return unreadList.isNotEmpty
                               ? Badge(
                                   padding: const EdgeInsets.symmetric(
@@ -67,17 +68,17 @@ class ChatCard extends StatelessWidget {
                                   label: Text(unreadList.length.toString()),
                                   largeSize: 30,
                                 )
-                                : const SizedBox();
-                              // : Text(DateFormat.yMMMEd()
-                              //     .format(
-                              //       DateTime.fromMillisecondsSinceEpoch(
-                              //         int.parse(
-                              //           item.lastMessageTime!.toString(),
-                              //         ),
-                              //       ),
-                              //     )
-                              //     .toString());
-                        }else{
+                              : const SizedBox();
+                          // : Text(DateFormat.yMMMEd()
+                          //     .format(
+                          //       DateTime.fromMillisecondsSinceEpoch(
+                          //         int.parse(
+                          //           item.lastMessageTime!.toString(),
+                          //         ),
+                          //       ),
+                          //     )
+                          //     .toString());
+                        } else {
                           return const SizedBox();
                         }
                       })),

@@ -8,6 +8,7 @@ class ChatUser {
   String? lastActivated;
   String? pushToken;
   bool? online;
+  List? myUsers;
 
   ChatUser({
     required this.id,
@@ -19,6 +20,7 @@ class ChatUser {
     required this.lastActivated,
     required this.pushToken,
     required this.online,
+    required this.myUsers,
   });
 
   factory ChatUser.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class ChatUser {
       lastActivated: json['last_activated'],
       pushToken: json['push_token'],
       online: json['online'],
+      myUsers: json['my_users'],
     );
   }
 
@@ -45,7 +48,8 @@ class ChatUser {
       'created_at': createdAt,
       'last_activated': lastActivated,
       'push_token': pushToken,
-      'online': online,   
+      'online': online,
+      'my_users': myUsers
     };
   }
 }

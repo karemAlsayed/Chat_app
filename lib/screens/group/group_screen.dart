@@ -1,13 +1,15 @@
-
-
-
+import 'package:chat_app/firebase/fire_database.dart';
+import 'package:chat_app/models/group_model.dart';
+import 'package:chat_app/models/message_model.dart';
 import 'package:chat_app/screens/group/widgets/group_member.dart';
 import 'package:chat_app/screens/group/widgets/group_message_card.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
 class GroupScreen extends StatefulWidget {
-  const GroupScreen({super.key});
+  const GroupScreen({super.key, required this.chatGroup});
+  final GroupRoom chatGroup;
 
   @override
   State<GroupScreen> createState() => _GroupScreenState();
@@ -16,6 +18,7 @@ class GroupScreen extends StatefulWidget {
 bool typing = false;
 
 class _GroupScreenState extends State<GroupScreen> {
+  TextEditingController messageController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,21 +26,44 @@ class _GroupScreenState extends State<GroupScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Name'),
-            Text(
-              'Ahmed,Mohamed,Abdelrahman',
-              style: Theme.of(context).textTheme.labelLarge,
-            )
+            Text(widget.chatGroup.name!),
+            StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .where('id', whereIn: widget.chatGroup.members!)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    List members = [];
+                    for (var element in snapshot.data!.docs) {
+                      members.add(element.data()['name']);
+                    }
+                    return Text(
+                      members.join(', '),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    );
+                  }
+                  return const Text('no members');
+                })
           ],
         ),
         actions: [
           IconButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const GroupMemberScreen(),),);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>  GroupMemberScreen(
+                    chatGroup: widget.chatGroup,
+                  ),
+                ),
+              );
             },
             icon: const Icon(Iconsax.people),
           ),
-        
         ],
       ),
       body: Padding(
@@ -45,40 +71,80 @@ class _GroupScreenState extends State<GroupScreen> {
         child: Column(
           children: [
             Expanded(
-              child:  ListView.builder(
-                  reverse: true,
-                  itemCount: 5,
-                  itemBuilder: (context, index) {
-                    return 
-                    
-                  GroupMessageCard(index: index,);
+              child: StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('groups')
+                      .doc(widget.chatGroup.id)
+                      .collection('messages')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final List<Message> Msgs = snapshot.data!.docs
+                          .map(
+                            (e) => Message.fromJson(e.data()),
+                          )
+                          .toList()
+                        ..sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+                      if (Msgs.isNotEmpty) {
+                        return ListView.builder(
+                            reverse: true,
+                            itemCount: Msgs.length,
+                            itemBuilder: (context, index) {
+                              return GroupMessageCard(
+                                message: Msgs[index],
+                                index: index,
+                              );
+                            });
+                      } else {
+                        return Center(
+                          child: GestureDetector(
+                            onTap: () {
+                              FireData()
+                                  .sendGMessage('Hi!', widget.chatGroup.id!);
+                            },
+                            child: Card(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 50, vertical: 20),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '👋',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .displayMedium,
+                                    ),
+                                    const SizedBox(
+                                      height: 16,
+                                    ),
+                                    Text(
+                                      'Say hi !',
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
                   }),
-              // child: Center(
-              //         child: GestureDetector(
-              //           child: Card(
-              //             color:  Theme.of(context).colorScheme.primaryContainer,
-                          
-              //             child: Padding(
-              //               padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-              //               child: Column(
-              //                 mainAxisSize:  MainAxisSize.min,
-              //                 mainAxisAlignment: MainAxisAlignment.center,
-              //                 children: [
-              //                   Text('👋',style: Theme.of(context).textTheme.displayMedium,),
-              //                   const SizedBox(height: 16,),
-              //                   Text('Say hi !',style: Theme.of(context).textTheme.bodyLarge,),
-              //                 ],
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //       ),
             ),
             Row(
               children: [
                 Expanded(
                   child: Card(
                     child: TextField(
+                      controller: messageController,
                       onTapOutside: (event) {
                         setState(() {
                           typing = false;
@@ -119,7 +185,18 @@ class _GroupScreenState extends State<GroupScreen> {
                   ),
                 ),
                 IconButton.filled(
-                  onPressed: () {},
+                  onPressed: () {
+                    if (messageController.text.isNotEmpty) {
+                      FireData()
+                          .sendGMessage(
+                              messageController.text, widget.chatGroup.id!)
+                          .then((value) {
+                        setState(() {
+                          messageController.clear();
+                        });
+                      });
+                    }
+                  },
                   icon: const Icon(Iconsax.send_1),
                 ),
               ],
