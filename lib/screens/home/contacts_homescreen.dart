@@ -199,7 +199,14 @@ class ContactCard extends StatelessWidget {
     return Card(
       child: ListTile(
         title: Text(user.name!),
-        leading: const CircleAvatar(),
+        leading: user.image == ''
+                      ? const CircleAvatar(
+                          radius: 30,
+                          child: Icon(Iconsax.user),
+                        )
+                      : CircleAvatar(
+                          backgroundImage: NetworkImage(user.image!),
+                        ),
         subtitle: Text(
           user.email!,
           style: Theme.of(context)

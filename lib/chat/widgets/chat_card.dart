@@ -5,6 +5,7 @@ import 'package:chat_app/models/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 
 class ChatCard extends StatelessWidget {
   const ChatCard({
@@ -18,7 +19,8 @@ class ChatCard extends StatelessWidget {
     List member = item.members!
         .where((element) => element != FirebaseAuth.instance.currentUser!.uid)
         .toList();
-        String userId = member.isEmpty ?FirebaseAuth.instance.currentUser!.uid:member.first;
+    String userId =
+        member.isEmpty ? FirebaseAuth.instance.currentUser!.uid : member.first;
     return StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('users')
@@ -38,7 +40,14 @@ class ChatCard extends StatelessWidget {
                                   chatUser: chatUser,
                                 )));
                   },
-                  leading: const CircleAvatar(),
+                  leading: chatUser.image == ''
+                      ? const CircleAvatar(
+                          radius: 30,
+                          child: Icon(Iconsax.user),
+                        )
+                      : CircleAvatar(
+                          backgroundImage: NetworkImage(chatUser.image!),
+                        ),
                   title: Text(chatUser.name!),
                   subtitle: Text(
                       maxLines: 1,

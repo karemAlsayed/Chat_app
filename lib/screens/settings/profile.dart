@@ -1,5 +1,13 @@
+import 'dart:io';
+
+import 'package:chat_app/firebase/fire_database.dart';
+import 'package:chat_app/firebase/fire_storage.dart';
+import 'package:chat_app/models/user_model.dart';
+import 'package:chat_app/provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -10,10 +18,17 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   TextEditingController nameController = TextEditingController();
+  TextEditingController aboutController = TextEditingController();
+  ChatUser? me;
+  String imageUrl = '';
+  bool nameEdit = false;
+  bool aboutEdit = false;
   @override
   void initState() {
+    me = Provider.of<ProviderApp>(context, listen: false).me;
     super.initState();
-    nameController.text = 'Name';
+    nameController.text = me!.name ?? 'Name';
+    aboutController.text = me!.about ?? 'About';
   }
 
   @override
@@ -31,16 +46,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      const CircleAvatar(
-                        radius: 50,
-                        child: Icon(Iconsax.user),
-                      ),
+                      imageUrl == ''
+                          ? me!.image == ''
+                              ? const CircleAvatar(
+                                  radius: 50,
+                                  child: Icon(Iconsax.user),
+                                )
+                              : CircleAvatar(
+                                  radius: 50,
+                                  backgroundImage: NetworkImage(me!.image!),
+                                )
+                          : CircleAvatar(
+                              radius: 50,
+                              backgroundImage: FileImage(File(imageUrl)),
+                            ),
                       Positioned(
                         bottom: -10,
                         right: -10,
                         child: Center(
                           child: IconButton.filled(
-                            onPressed: () {},
+                            onPressed: () async {
+                              ImagePicker imagePicker = ImagePicker();
+                              XFile? image = await imagePicker.pickImage(
+                                  source: ImageSource.gallery);
+                              if (image != null) {
+                                setState(() {
+                                  imageUrl = image.path;
+                                });
+                                FireStorage().updateProfilePic(
+                                  file: File(image.path),
+                                );
+                              }
+                            },
                             icon: const Icon(Iconsax.gallery_add),
                           ),
                         ),
@@ -55,10 +92,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: ListTile(
                       leading: const Icon(Iconsax.user),
                       trailing: IconButton(
-                          onPressed: () {}, icon: const Icon(Iconsax.edit)),
+                          onPressed: () {
+                            setState(() {
+                              nameEdit = !nameEdit;
+                            });
+                          },
+                          icon: const Icon(Iconsax.edit)),
                       title: TextField(
                         controller: nameController,
-                        enabled: false,
+                        enabled: nameEdit,
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           labelText: 'Name',
@@ -69,37 +111,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: ListTile(
                       leading: const Icon(Iconsax.info_circle),
                       trailing: IconButton(
-                          onPressed: () {}, icon: const Icon(Iconsax.edit)),
+                          onPressed: () {
+                            setState(() {
+                              aboutEdit = !aboutEdit;
+                            });
+                          },
+                          icon: const Icon(Iconsax.edit)),
                       title: TextField(
-                        controller: nameController,
-                        enabled: false,
+                        controller: aboutController,
+                        enabled: aboutEdit,
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           labelText: 'About',
                         ),
                       )),
                 ),
-                const Card(
+                Card(
                   child: ListTile(
-                    leading: Icon(Iconsax.direct),
-                    title: Text('Email'),
-                    subtitle: Text('Email@gmail.com'),
+                    leading: const Icon(Iconsax.direct),
+                    title: const Text('Email'),
+                    subtitle: Text(me!.email ?? 'Email'),
                   ),
                 ),
-                const Card(
+                Card(
                   child: ListTile(
-                    leading: Icon(Iconsax.timer),
-                    title: Text('Join Date'),
-                    subtitle: Text('dd/mm/yyyy'),
+                    leading: const Icon(Iconsax.timer),
+                    title: const Text('Join Date'),
+                    subtitle: Text(me!.createdAt.toString()),
                   ),
                 ),
-                const SizedBox(height: 20,),
+                const SizedBox(
+                  height: 20,
+                ),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    FireData().editProfile(nameController.text, aboutController.text).then(
+                      (value) {
+                        setState(() {
+                          nameEdit = false;
+                          aboutEdit = false;
+                        });
+                        Navigator.pop(context);
+                      },
+                    );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    
+                    backgroundColor:
+                        Theme.of(context).colorScheme.primaryContainer,
                     minimumSize: const Size(double.infinity, 50),
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -108,7 +167,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: const Center(
                     child: Text(
                       'Save',
-                    
                     ),
                   ),
                 ),

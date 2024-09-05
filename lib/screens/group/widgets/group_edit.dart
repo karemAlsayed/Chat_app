@@ -33,7 +33,7 @@ class _GroupEditScreenState extends State<GroupEditScreen> {
       floatingActionButton: 
            FloatingActionButton.extended(
               onPressed: () {
-                FireData().editGroup(controller.text, widget.chatGroup.id!, members).then(
+                FireData().editGroup(controller.text==''? 'Group' : controller.text, widget.chatGroup.id!, members).then(
                   (value) {
                     
                     Navigator.pop(context);
@@ -107,7 +107,7 @@ class _GroupEditScreenState extends State<GroupEditScreen> {
                 ),
                 const Spacer(),
                 Text(
-                  '0',
+                  members.length.toString(),
                   style: TextStyle(color: Colors.grey.shade600),
                 ),
               ],

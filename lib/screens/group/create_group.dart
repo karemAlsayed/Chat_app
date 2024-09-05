@@ -24,7 +24,7 @@ class _CreateGroupState extends State<CreateGroup> {
           ? null
           : FloatingActionButton.extended(
               onPressed: () {
-                FireData().createGroup(controller.text, members).then(
+                FireData().createGroup(controller.text=='' ? 'New Group' : controller.text, members).then(
                   (value) {
                     Navigator.pop(context);
                     setState(() {
