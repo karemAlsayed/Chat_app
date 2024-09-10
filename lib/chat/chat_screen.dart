@@ -34,10 +34,20 @@ class _ChatScreenState extends State<ChatScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(widget.chatUser.name!),
-            Text(
-              // widget.chatUser.lastActivated!,
-              'Online',
-              style: Theme.of(context).textTheme.labelLarge,
+            StreamBuilder(
+              stream: FirebaseFirestore.instance.collection('users').doc(widget.chatUser.id).snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Text(
+                  // widget.chatUser.lastActivated!,
+                  snapshot.data!.data()!['online'] ? 'Online' : 'last seen at ${snapshot.data!.data()!['last_activated']}',
+                  style: Theme.of(context).textTheme.labelLarge,
+                );
+                }else{
+                  return Container();
+                  
+                }
+              }
             )
           ],
         ),

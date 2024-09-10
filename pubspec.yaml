@@ -52,6 +52,7 @@ dependencies:
   provider: ^6.1.2
   cool_alert: ^2.0.1
   firebase_messaging: ^14.7.10
+  photo_view: ^0.15.0
 
 dev_dependencies:
   flutter_test:

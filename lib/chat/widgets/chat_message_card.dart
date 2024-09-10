@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chat_app/chat/widgets/photo_vies.dart';
 import 'package:chat_app/firebase/fire_database.dart';
 import 'package:chat_app/models/message_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,7 +11,8 @@ class ChatMessageCard extends StatefulWidget {
   const ChatMessageCard({
     super.key,
     required this.messageItem,
-    required this.roomId, required this.select,
+    required this.roomId,
+    required this.select,
   });
   final Message messageItem;
   final String roomId;
@@ -39,7 +41,8 @@ class _ChatMessageCardState extends State<ChatMessageCard> {
 
     return Container(
       decoration: BoxDecoration(
-          color: widget.select? Colors.grey:Colors.transparent, borderRadius: BorderRadius.circular(12)),
+          color: widget.select ? Colors.grey : Colors.transparent,
+          borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(vertical: 1),
       child: Row(
         mainAxisAlignment:
@@ -74,14 +77,25 @@ class _ChatMessageCardState extends State<ChatMessageCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     widget.messageItem.type == 'image'
-                        ? Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: CachedNetworkImage(
-                              imageUrl: widget.messageItem.msg!,
-                              placeholder: (context, url) =>
-                                  const CircularProgressIndicator(),
+                        ? GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PhotoViewScreen(
+                                      imageUrl: widget.messageItem.msg!,
+                                    ),
+                                  ));
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: CachedNetworkImage(
+                                imageUrl: widget.messageItem.msg!,
+                                placeholder: (context, url) =>
+                                    const CircularProgressIndicator(),
+                              ),
                             ),
                           )
                         : Text(
