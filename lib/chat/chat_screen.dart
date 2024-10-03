@@ -5,6 +5,7 @@ import 'package:chat_app/firebase/fire_database.dart';
 import 'package:chat_app/firebase/fire_storage.dart';
 import 'package:chat_app/models/message_model.dart';
 import 'package:chat_app/models/user_model.dart';
+import 'package:chat_app/utils/date_time.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,20 +36,23 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Text(widget.chatUser.name!),
             StreamBuilder(
-              stream: FirebaseFirestore.instance.collection('users').doc(widget.chatUser.id).snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return Text(
-                  // widget.chatUser.lastActivated!,
-                  snapshot.data!.data()!['online'] ? 'Online' : 'last seen at ${snapshot.data!.data()!['last_activated']}',
-                  style: Theme.of(context).textTheme.labelLarge,
-                );
-                }else{
-                  return Container();
-                  
-                }
-              }
-            )
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(widget.chatUser.id)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Text(
+                      // widget.chatUser.lastActivated!,
+                      snapshot.data!.data()!['online']
+                          ? 'Online'
+                          : 'last seen ${MyDateTime.dateAndTime(widget.chatUser.lastActivated!)} at ${MyDateTime.timeDate(widget.chatUser.lastActivated!)}',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    );
+                  } else {
+                    return Container();
+                  }
+                })
           ],
         ),
         actions: [
@@ -64,7 +68,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   icon: const Icon(Iconsax.trash),
                 )
               : Container(),
-          copymsgs.isNotEmpty&&copymsgs.length==1
+          copymsgs.isNotEmpty && copymsgs.length == 1
               ? IconButton(
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: copymsgs.join('\n')));
@@ -110,6 +114,32 @@ class _ChatScreenState extends State<ChatScreen> {
                               reverse: true,
                               itemCount: messageItems.length,
                               itemBuilder: (context, index) {
+                                String newDate = '';
+                                bool isSameDate = false;
+                                if ((index == 0&& messageItems.length ==1) ||
+                                    index == messageItems.length - 1) {
+                                  newDate = MyDateTime.dateAndTime(
+                                      messageItems[index]
+                                          .createdAt!
+                                          .toString());
+                                } else {
+                                  final DateTime date = MyDateTime.dateFormat(
+                                      messageItems[index]
+                                          .createdAt!
+                                          .toString());
+                                  final DateTime prDate = MyDateTime.dateFormat(
+                                      messageItems[index + 1]
+                                          .createdAt!
+                                          .toString());
+                                  isSameDate = date.isAtSameMomentAs(prDate);
+                                  newDate = isSameDate
+                                      ? ''
+                                      : MyDateTime.dateAndTime(
+                                          messageItems[index]
+                                              .createdAt!
+                                              .toString());
+                                }
+
                                 return GestureDetector(
                                   onTap: () {
                                     setState(() {
@@ -151,11 +181,31 @@ class _ChatScreenState extends State<ChatScreen> {
                                           : null;
                                     });
                                   },
-                                  child: ChatMessageCard(
-                                    select: selectedmsgs
-                                        .contains(messageItems[index].id),
-                                    roomId: widget.roomId,
-                                    messageItem: messageItems[index],
+                                  child: Column(
+                                    children: [
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      if (newDate != '')
+                                        Center(
+                                          child: Card(
+                                            
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10.0),
+                                              child: Text(newDate,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .labelSmall),
+                                            ),
+                                          ),
+                                        ),
+                                      ChatMessageCard(
+                                        select: selectedmsgs
+                                            .contains(messageItems[index].id),
+                                        roomId: widget.roomId,
+                                        messageItem: messageItems[index],
+                                      ),
+                                    ],
                                   ),
                                 );
                               })
@@ -252,10 +302,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                       }
                                     },
                                     icon: const Icon(Iconsax.gallery),
-                                  ),
-                                  IconButton(
-                                    onPressed: () {},
-                                    icon: const Icon(Iconsax.camera),
                                   ),
                                 ],
                               ),

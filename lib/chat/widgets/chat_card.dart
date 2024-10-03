@@ -2,6 +2,7 @@ import 'package:chat_app/chat/chat_screen.dart';
 import 'package:chat_app/models/message_model.dart';
 import 'package:chat_app/models/room_model.dart';
 import 'package:chat_app/models/user_model.dart';
+import 'package:chat_app/utils/date_time.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,7 @@ class ChatCard extends StatelessWidget {
                           child: Icon(Iconsax.user),
                         )
                       : CircleAvatar(
+                          radius: 30,
                           backgroundImage: NetworkImage(chatUser.image!),
                         ),
                   title: Text(chatUser.name!),
@@ -77,16 +79,9 @@ class ChatCard extends StatelessWidget {
                                   label: Text(unreadList.length.toString()),
                                   largeSize: 30,
                                 )
-                              : const SizedBox();
-                          // : Text(DateFormat.yMMMEd()
-                          //     .format(
-                          //       DateTime.fromMillisecondsSinceEpoch(
-                          //         int.parse(
-                          //           item.lastMessageTime!.toString(),
-                          //         ),
-                          //       ),
-                          //     )
-                          //     .toString());
+                              
+                          : Text(MyDateTime.dateAndTime(item.lastMessageTime!)
+                              .toString());
                         } else {
                           return const SizedBox();
                         }

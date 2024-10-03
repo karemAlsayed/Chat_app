@@ -38,9 +38,9 @@ class _ContactsHomeScreenState extends State<ContactsHomeScreen> {
                         Text('Enter Contact Email :',
                             style: Theme.of(context).textTheme.bodyLarge),
                         const Spacer(),
-                        IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Iconsax.scan_barcode))
+                        // IconButton(
+                        //     onPressed: () {},
+                        //     icon: const Icon(Iconsax.scan_barcode))
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -205,6 +205,7 @@ class ContactCard extends StatelessWidget {
                           child: Icon(Iconsax.user),
                         )
                       : CircleAvatar(
+                          radius: 30,
                           backgroundImage: NetworkImage(user.image!),
                         ),
         subtitle: Text(

@@ -1,4 +1,5 @@
 import 'package:chat_app/firebase/fire_auth.dart';
+import 'package:chat_app/layout.dart';
 
 import 'package:chat_app/utils/colors.dart';
 
@@ -86,6 +87,11 @@ class _SetupProfileState extends State<SetupProfile> {
                                 .then(
                               (value) {
                                 FireAuth.createUser();
+
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => const LayoutApp(
+                                
+
+                                )));
                               },
                             );
                           }

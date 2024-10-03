@@ -1,7 +1,9 @@
+import 'package:chat_app/firebase/fire_auth.dart';
 import 'package:chat_app/models/user_model.dart';
 import 'package:chat_app/provider/provider.dart';
+import 'package:chat_app/screens/auth/login_screen.dart';
 import 'package:chat_app/screens/settings/profile.dart';
-import 'package:chat_app/screens/settings/widgets/qr_code.dart';
+
 import 'package:cool_alert/cool_alert.dart';
 
 import 'package:flutter/material.dart';
@@ -20,7 +22,7 @@ class _SettingsHomeScreenState extends State<SettingsHomeScreen> {
   ChatUser? me;
   @override
   Widget build(BuildContext context) {
-    final image = me?.image ?? '';
+    
     final prov = Provider.of<ProviderApp>(context);
     return Scaffold(
       appBar: AppBar(
@@ -30,29 +32,41 @@ class _SettingsHomeScreenState extends State<SettingsHomeScreen> {
         padding: const EdgeInsets.all(8.0),
         child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ListTile(
-                minVerticalPadding: 40,
-                leading: me?.image == ''
-                    ? const CircleAvatar(
-                        radius: 30,
-                        child: Icon(Iconsax.user),
-                      )
-                    : CircleAvatar(
-                        radius: 30,
-                        backgroundImage: NetworkImage(image),
-                      ),
-                title: Text(prov.me?.name ?? 'Name'),
-                trailing: IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const QrCodeScreen(),
-                          ));
-                    },
-                    icon: const Icon(Iconsax.scan_barcode)),
+               Center(
+                child: 
+                prov.me?.image == ''?
+                const CircleAvatar(
+                  radius: 50,
+                  child: Icon(Iconsax.user),
+                )
+               :CircleAvatar(
+                          radius: 50,
+                          backgroundImage: NetworkImage(prov.me?.image ?? ''),
+                        )
+                      ,
+                  
+                
               ),
+              const SizedBox(
+                height: 20,
+              ),
+              Text(
+              prov.me?.name ?? 'Name',
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Text(
+                  prov.me?.email ?? 'No Email',
+                style: Theme.of(context).textTheme.bodyLarge!.copyWith( color: Colors.grey),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+
               Card(
                 child: ListTile(
                   onTap: () {
@@ -123,6 +137,15 @@ class _SettingsHomeScreenState extends State<SettingsHomeScreen> {
                     
                       text: 'Are you sure you want to logout?',
                       onConfirmBtnTap: () {
+                        
+                        FireAuth.auth.signOut().then((value) {
+                          Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                              (route) => false);
+                        });
                         
                       },
                     );

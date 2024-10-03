@@ -1,7 +1,7 @@
-
 // ignore_for_file: avoid_print
 
 import 'package:chat_app/screens/auth/password_reset_screen.dart';
+import 'package:chat_app/screens/auth/setup_profile.dart';
 
 import 'package:chat_app/utils/colors.dart';
 import 'package:chat_app/widgets/app_logo.dart';
@@ -97,20 +97,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 5,
                       ),
                       ElevatedButton(
-                        onPressed: () async{
+                        onPressed: () async {
                           if (formKey.currentState!.validate()) {
                             await FirebaseAuth.instance
                                 .signInWithEmailAndPassword(
                                     email: emailController.text,
                                     password: passController.text)
-                                .then((value) {
-                              print('Login Successful');
-                            }).onError((error, stackTrace) {
-                              ScaffoldMessenger.of(context).showSnackBar( SnackBar(
+                                .then((value) {})
+                                .onError((error, stackTrace) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
                                 content: Text(error.toString()),
                               ));
                             });
-
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -135,23 +134,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       OutlinedButton(
                         onPressed: () async {
-                          // if (formKey.currentState!.validate()) {
-                          //   Navigator.pushAndRemoveUntil(
-                          //       context,
-                          //       MaterialPageRoute(
-                          //           builder: (context) => const SetupProfile()),
-                          //       (route) => false);
-                          // }
-                          await FirebaseAuth.instance
-                              .createUserWithEmailAndPassword(
-                                  email: emailController.text,
-                                  password: passController.text)
-                              .then((value) {
-                            print('Registration Successful');
-                          }).onError((error, stackTrace) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(error.toString())));
-                          });
+                          if (formKey.currentState!.validate()) {
+                            await FirebaseAuth.instance
+                                .createUserWithEmailAndPassword(
+                                    email: emailController.text,
+                                    password: passController.text)
+                                .then((value) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SetupProfile(),
+                                ),
+                              );
+                            }).onError((error, stackTrace) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(error.toString())));
+                            });
+                          }
                         },
                         style: OutlinedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 50),

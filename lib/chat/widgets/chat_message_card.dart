@@ -2,10 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/chat/widgets/photo_vies.dart';
 import 'package:chat_app/firebase/fire_database.dart';
 import 'package:chat_app/models/message_model.dart';
+import 'package:chat_app/utils/date_time.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:intl/intl.dart';
+
 
 class ChatMessageCard extends StatefulWidget {
   const ChatMessageCard({
@@ -48,10 +49,7 @@ class _ChatMessageCardState extends State<ChatMessageCard> {
         mainAxisAlignment:
             isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          isMe
-              ? IconButton(
-                  onPressed: () {}, icon: const Icon(Iconsax.message_edit))
-              : const SizedBox(),
+        
           const SizedBox(
             width: 5,
           ),
@@ -108,10 +106,7 @@ class _ChatMessageCardState extends State<ChatMessageCard> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          DateFormat.yMMMd('en_US')
-                              .format(DateTime.fromMillisecondsSinceEpoch(
-                                  int.parse(widget.messageItem.createdAt!)))
-                              .toString(),
+                         MyDateTime.timeDate(widget.messageItem.createdAt!),
                           style:
                               Theme.of(context).textTheme.labelSmall?.copyWith(
                                     color: Colors.grey,

@@ -34,9 +34,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                         Text('Enter Contact Email :',
                             style: Theme.of(context).textTheme.bodyLarge),
                         const Spacer(),
-                        IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Iconsax.scan_barcode))
+                        
                       ],
                     ),
                     const SizedBox(height: 20),
