@@ -102,14 +102,41 @@ class _LoginScreenState extends State<LoginScreen> {
                             await FirebaseAuth.instance
                                 .signInWithEmailAndPassword(
                                     email: emailController.text,
-                                    password: passController.text)
-                                .then((value) {})
-                                .onError((error, stackTrace) {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                content: Text(error.toString()),
-                              ));
-                            });
+                                password: passController.text,
+                              );
+                              // On successful sign in, you can navigate or perform other actions
+                              
+                            } on FirebaseAuthException catch (e) {
+                              String errorMessage;
+                              // Handle specific Firebase errors
+                              switch (e.code) {
+                                case 'user-not-found':
+                                  errorMessage =
+                                      'No user found for that email.';
+                                  break;
+                                case 'wrong-password':
+                                  errorMessage =
+                                      'Incorrect password. Please try again.';
+                                  break;
+                                case 'invalid-email':
+                                  errorMessage = 'Invalid email format.';
+                                  break;
+                                case 'user-disabled':
+                                  errorMessage =
+                                      'This account has been disabled.';
+                                  break;
+                                default:
+                                  errorMessage =
+                                      'An unknown error occurred. Please try again later.';
+                              }
+                              // Show the error message using a custom SnackBar
+                              showCustomSnackBar(
+                                  context, errorMessage, Colors.red);
+                            } catch (e) {
+                              // Handle any other non-Firebase errors
+                              showCustomSnackBar(context,
+                                  'An unexpected error occurred', Colors.red);
+                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(
