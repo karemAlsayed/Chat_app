@@ -4,6 +4,7 @@ import 'package:chat_app/firebase/fire_database.dart';
 import 'package:chat_app/firebase/fire_storage.dart';
 import 'package:chat_app/models/user_model.dart';
 import 'package:chat_app/provider/provider.dart';
+import 'package:chat_app/utils/date_time.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_picker/image_picker.dart';
@@ -137,7 +138,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: ListTile(
                     leading: const Icon(Iconsax.timer),
                     title: const Text('Join Date'),
-                    subtitle: Text(me!.createdAt.toString()),
+                    subtitle: Text(MyDateTime.dateAndTime(me!.createdAt!)),
                   ),
                 ),
                 const SizedBox(

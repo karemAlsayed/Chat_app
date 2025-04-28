@@ -1,10 +1,10 @@
-import 'package:chat_app/firebase/fire_auth.dart';
+
 import 'package:chat_app/models/user_model.dart';
 import 'package:chat_app/provider/provider.dart';
 import 'package:chat_app/screens/auth/login_screen.dart';
 import 'package:chat_app/screens/settings/profile.dart';
 
-import 'package:cool_alert/cool_alert.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -82,37 +82,37 @@ class _SettingsHomeScreenState extends State<SettingsHomeScreen> {
                   trailing: const Icon(Iconsax.arrow_right_3),
                 ),
               ),
-              Card(
-                child: ListTile(
-                  onTap: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Theme'),
-                            content: SingleChildScrollView(
-                              child: BlockPicker(
-                                pickerColor: Color(prov.mainColor),
-                                onColorChanged: (value) {
-                                  prov.changeColor(value.value);
-                                },
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Close'),
-                              ),
-                            ],
-                          );
-                        });
-                  },
-                  title: const Text('Theme'),
-                  leading: const Icon(Iconsax.color_swatch),
-                ),
-              ),
+              // Card(
+              //   child: ListTile(
+              //     onTap: () {
+              //       showDialog(
+              //           context: context,
+              //           builder: (context) {
+              //             return AlertDialog(
+              //               title: const Text('Theme'),
+              //               content: SingleChildScrollView(
+              //                 child: BlockPicker(
+              //                   pickerColor: Color(prov.mainColor),
+              //                   onColorChanged: (value) {
+              //                     prov.changeColor(value.value);
+              //                   },
+              //                 ),
+              //               ),
+              //               actions: [
+              //                 TextButton(
+              //                   onPressed: () {
+              //                     Navigator.pop(context);
+              //                   },
+              //                   child: const Text('Close'),
+              //                 ),
+              //               ],
+              //             );
+              //           });
+              //     },
+              //     title: const Text('Theme'),
+              //     leading: const Icon(Iconsax.color_swatch),
+              //   ),
+              // ),
               Card(
                 child: ListTile(
                   title: const Text('Dark Mode'),
@@ -129,27 +129,39 @@ class _SettingsHomeScreenState extends State<SettingsHomeScreen> {
                 child: ListTile(
                 
                   onTap: () {
-                    CoolAlert.show(
-                      context: context,
-                      type: CoolAlertType.confirm,
-                      animType: CoolAlertAnimType.slideInDown,
-                      confirmBtnColor: Colors.red,
-                    
-                      text: 'Are you sure you want to logout?',
-                      onConfirmBtnTap: () {
-                        
-                        FireAuth.auth.signOut().then((value) {
-                          Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginScreen(),
-                              ),
-                              (route) => false);
-                        });
-                        
-                      },
-                    );
-                  },
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Confirm Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+            },
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false,
+              );
+            },
+            child: const Text('Logout'),
+          ),
+        ],
+      );
+    },
+  );
+},
                   title: const Text('Logout'),
                   trailing: const Icon(Iconsax.logout_1),
                 ),

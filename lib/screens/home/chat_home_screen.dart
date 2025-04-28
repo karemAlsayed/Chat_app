@@ -128,15 +128,17 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
 
 class NoChatsWidget extends StatelessWidget {
   const NoChatsWidget({
-    super.key,
+    super.key, this.title, this.subtitle,
   });
+  final String? title;
+  final String? subtitle ;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
         children: [
-          const Center(
-            child: Text('No Chats', style: TextStyle(fontSize: 20)),
+           Center(
+            child: Text(title ?? 'No Chats', style: TextStyle(fontSize: 20)),
           ),
           Positioned(
             bottom: 10,
@@ -147,7 +149,7 @@ class NoChatsWidget extends StatelessWidget {
               children: [
     
                 
-                Text('Click Here To Start Chatting',style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                Text( subtitle ?? 'Click Here To Start Chatting',style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   color: Colors.white
                 )),
                 const Icon(

@@ -99,9 +99,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ElevatedButton(
                         onPressed: () async {
                           if (formKey.currentState!.validate()) {
-                            await FirebaseAuth.instance
-                                .signInWithEmailAndPassword(
-                                    email: emailController.text,
+                            try {
+                              // Attempt to sign in with email and password
+                              await FirebaseAuth.instance
+                                  .signInWithEmailAndPassword(
+                                email: emailController.text,
                                 password: passController.text,
                               );
                               // On successful sign in, you can navigate or perform other actions
@@ -162,21 +164,46 @@ class _LoginScreenState extends State<LoginScreen> {
                       OutlinedButton(
                         onPressed: () async {
                           if (formKey.currentState!.validate()) {
-                            await FirebaseAuth.instance
-                                .createUserWithEmailAndPassword(
-                                    email: emailController.text,
-                                    password: passController.text)
-                                .then((value) {
+                            try {
+                              await FirebaseAuth.instance
+                                  .createUserWithEmailAndPassword(
+                                email: emailController.text,
+                                password: passController.text,
+                              );
+                              // Navigate to Setup Profile page on successful account creation
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const SetupProfile(),
-                                ),
+                                    builder: (context) => const SetupProfile()),
                               );
-                            }).onError((error, stackTrace) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(error.toString())));
-                            });
+                            } on FirebaseAuthException catch (e) {
+                              String errorMessage;
+                              // Handle specific error codes
+                              switch (e.code) {
+                                case 'weak-password':
+                                  errorMessage =
+                                      'The password provided is too weak.';
+                                  break;
+                                case 'email-already-in-use':
+                                  errorMessage =
+                                      'The account already exists for that email.';
+                                  break;
+                                case 'invalid-email':
+                                  errorMessage =
+                                      'The email address is not valid.';
+                                  break;
+                                default:
+                                  errorMessage =
+                                      'An unknown error occurred. Please try again.';
+                              }
+                              // Show customized error message
+                              showCustomSnackBar(
+                                  context, errorMessage, Colors.red);
+                            } catch (e) {
+                              // Handle any other errors that aren't Firebase-related
+                              showCustomSnackBar(context,
+                                  'An unexpected error occurred', Colors.red);
+                            }
                           }
                         },
                         style: OutlinedButton.styleFrom(
@@ -203,4 +230,23 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+}
+
+void showCustomSnackBar(BuildContext context, String message, Color color) {
+  final snackBar = SnackBar(
+    content: Text(
+      message,
+      style: const TextStyle(color: Colors.white, fontSize: 12),
+    ),
+    backgroundColor: color,
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+    margin: const EdgeInsets.all(16), // Adds some margin around the SnackBar
+    duration: const Duration(seconds: 3),
+
+  );
+
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }

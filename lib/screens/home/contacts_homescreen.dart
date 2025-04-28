@@ -1,6 +1,7 @@
 import 'package:chat_app/chat/chat_screen.dart';
 import 'package:chat_app/firebase/fire_database.dart';
 import 'package:chat_app/models/user_model.dart';
+import 'package:chat_app/screens/home/chat_home_screen.dart';
 import 'package:chat_app/widgets/custom_text_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -139,7 +140,8 @@ class _ContactsHomeScreenState extends State<ContactsHomeScreen> {
                     if (snapshot.hasData) {
                       myContacts = snapshot.data!.data()!['my_users'];
 
-                      return StreamBuilder(
+                      return myContacts.isNotEmpty?
+                      StreamBuilder(
                           stream: FirebaseFirestore.instance
                               .collection('users')
                               .where('id',
@@ -172,7 +174,12 @@ class _ContactsHomeScreenState extends State<ContactsHomeScreen> {
                                 child: Container(),
                               );
                             }
-                          });
+                          })
+                          :const NoChatsWidget(
+                            title: 'No Contacts',
+                            subtitle: 'Click Here To Add Contacts',
+                          )
+                          ;
                     } else {
                       return Center(
                         child: Container(),
