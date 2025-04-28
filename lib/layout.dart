@@ -42,7 +42,7 @@ class _LayoutAppState extends State<LayoutApp> {
   Widget build(BuildContext context) {
     List<Widget> screens = const [
       ChatHomeScreen(),
-      ContactsHomeScreen(),
+    
       SettingsHomeScreen()
     ];
     return Scaffold(
@@ -57,8 +57,7 @@ class _LayoutAppState extends State<LayoutApp> {
           },
           destinations: const [
             NavigationDestination(icon: Icon(Iconsax.message), label: 'Chat'),
-            NavigationDestination(
-                icon: Icon(Iconsax.people), label: 'Contacts'),
+            
             NavigationDestination(
                 icon: Icon(Iconsax.setting), label: 'Settings'),
           ]),

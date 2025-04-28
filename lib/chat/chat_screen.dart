@@ -35,24 +35,24 @@ class _ChatScreenState extends State<ChatScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(widget.chatUser.name!),
-            StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(widget.chatUser.id)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return Text(
-                      // widget.chatUser.lastActivated!,
-                      snapshot.data!.data()!['online']
-                          ? 'Online'
-                          : 'last seen ${MyDateTime.dateAndTime(widget.chatUser.lastActivated!)} at ${MyDateTime.timeDate(widget.chatUser.lastActivated!)}',
-                      style: Theme.of(context).textTheme.labelLarge,
-                    );
-                  } else {
-                    return Container();
-                  }
-                })
+            // StreamBuilder(
+            //     stream: FirebaseFirestore.instance
+            //         .collection('users')
+            //         .doc(widget.chatUser.id)
+            //         .snapshots(),
+            //     builder: (context, snapshot) {
+            //       if (snapshot.hasData) {
+            //         return Text(
+            //           // widget.chatUser.lastActivated!,
+            //           snapshot.data!.data()!['online']
+            //               ? 'Online'
+            //               : 'last seen ${MyDateTime.dateAndTime(widget.chatUser.lastActivated!)} at ${MyDateTime.timeDate(widget.chatUser.lastActivated!)}',
+            //           style: Theme.of(context).textTheme.labelLarge,
+            //         );
+            //       } else {
+            //         return Container();
+            //       }
+            //     })
           ],
         ),
         actions: [
@@ -82,256 +82,258 @@ class _ChatScreenState extends State<ChatScreen> {
               : Container(),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
-        child: Column(
-          children: [
-            Expanded(
-              child: StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection('rooms')
-                      .doc(widget.roomId)
-                      .collection('messages')
-                      // .orderBy('createdAt', descending: true)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      List<Message> messageItems = snapshot.data!.docs
-                          .map(
-                            (e) => Message.fromJson(
-                              e.data(),
-                            ),
-                          )
-                          .toList()
-                        ..sort(
-                          (a, b) {
-                            return b.createdAt!.compareTo(a.createdAt!);
-                          },
-                        );
-
-                      return messageItems.isNotEmpty
-                          ? ListView.builder(
-                              reverse: true,
-                              itemCount: messageItems.length,
-                              itemBuilder: (context, index) {
-                                String newDate = '';
-                                bool isSameDate = false;
-                                if ((index == 0&& messageItems.length ==1) ||
-                                    index == messageItems.length - 1) {
-                                  newDate = MyDateTime.dateAndTime(
-                                      messageItems[index]
-                                          .createdAt!
-                                          .toString());
-                                } else {
-                                  final DateTime date = MyDateTime.dateFormat(
-                                      messageItems[index]
-                                          .createdAt!
-                                          .toString());
-                                  final DateTime prDate = MyDateTime.dateFormat(
-                                      messageItems[index + 1]
-                                          .createdAt!
-                                          .toString());
-                                  isSameDate = date.isAtSameMomentAs(prDate);
-                                  newDate = isSameDate
-                                      ? ''
-                                      : MyDateTime.dateAndTime(
-                                          messageItems[index]
-                                              .createdAt!
-                                              .toString());
-                                }
-
-                                return GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      selectedmsgs.isNotEmpty
-                                          ? selectedmsgs.contains(
-                                                  messageItems[index].id)
-                                              ? selectedmsgs.remove(
-                                                  messageItems[index].id)
-                                              : selectedmsgs
-                                                  .add(messageItems[index].id!)
-                                          : null;
-                                      copymsgs.isNotEmpty
-                                          ? messageItems[index].type == 'text'
-                                              ? copymsgs.contains(
-                                                      messageItems[index].msg)
-                                                  ? copymsgs.remove(
-                                                      messageItems[index].msg)
-                                                  : copymsgs.add(
-                                                      messageItems[index].msg!)
-                                              : null
-                                          : null;
-                                    });
-                                  },
-                                  onLongPress: () {
-                                    setState(() {
-                                      selectedmsgs
-                                              .contains(messageItems[index].id)
-                                          ? selectedmsgs
-                                              .remove(messageItems[index].id)
-                                          : selectedmsgs
-                                              .add(messageItems[index].id!);
-                                      messageItems[index].type == 'text'
-                                          ? copymsgs.contains(
-                                                  messageItems[index].msg)
-                                              ? copymsgs.remove(
-                                                  messageItems[index].msg)
-                                              : copymsgs
-                                                  .add(messageItems[index].msg!)
-                                          : null;
-                                    });
-                                  },
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(
-                                        height: 10,
-                                      ),
-                                      if (newDate != '')
-                                        Center(
-                                          child: Card(
-                                            
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(10.0),
-                                              child: Text(newDate,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .labelSmall),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
+          child: Column(
+            children: [
+              Expanded(
+                child: StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('rooms')
+                        .doc(widget.roomId)
+                        .collection('messages')
+                        // .orderBy('createdAt', descending: true)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        List<Message> messageItems = snapshot.data!.docs
+                            .map(
+                              (e) => Message.fromJson(
+                                e.data(),
+                              ),
+                            )
+                            .toList()
+                          ..sort(
+                            (a, b) {
+                              return b.createdAt!.compareTo(a.createdAt!);
+                            },
+                          );
+        
+                        return messageItems.isNotEmpty
+                            ? ListView.builder(
+                                reverse: true,
+                                itemCount: messageItems.length,
+                                itemBuilder: (context, index) {
+                                  String newDate = '';
+                                  bool isSameDate = false;
+                                  if ((index == 0&& messageItems.length ==1) ||
+                                      index == messageItems.length - 1) {
+                                    newDate = MyDateTime.dateAndTime(
+                                        messageItems[index]
+                                            .createdAt!
+                                            .toString());
+                                  } else {
+                                    final DateTime date = MyDateTime.dateFormat(
+                                        messageItems[index]
+                                            .createdAt!
+                                            .toString());
+                                    final DateTime prDate = MyDateTime.dateFormat(
+                                        messageItems[index + 1]
+                                            .createdAt!
+                                            .toString());
+                                    isSameDate = date.isAtSameMomentAs(prDate);
+                                    newDate = isSameDate
+                                        ? ''
+                                        : MyDateTime.dateAndTime(
+                                            messageItems[index]
+                                                .createdAt!
+                                                .toString());
+                                  }
+        
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        selectedmsgs.isNotEmpty
+                                            ? selectedmsgs.contains(
+                                                    messageItems[index].id)
+                                                ? selectedmsgs.remove(
+                                                    messageItems[index].id)
+                                                : selectedmsgs
+                                                    .add(messageItems[index].id!)
+                                            : null;
+                                        copymsgs.isNotEmpty
+                                            ? messageItems[index].type == 'text'
+                                                ? copymsgs.contains(
+                                                        messageItems[index].msg)
+                                                    ? copymsgs.remove(
+                                                        messageItems[index].msg)
+                                                    : copymsgs.add(
+                                                        messageItems[index].msg!)
+                                                : null
+                                            : null;
+                                      });
+                                    },
+                                    onLongPress: () {
+                                      setState(() {
+                                        selectedmsgs
+                                                .contains(messageItems[index].id)
+                                            ? selectedmsgs
+                                                .remove(messageItems[index].id)
+                                            : selectedmsgs
+                                                .add(messageItems[index].id!);
+                                        messageItems[index].type == 'text'
+                                            ? copymsgs.contains(
+                                                    messageItems[index].msg)
+                                                ? copymsgs.remove(
+                                                    messageItems[index].msg)
+                                                : copymsgs
+                                                    .add(messageItems[index].msg!)
+                                            : null;
+                                      });
+                                    },
+                                    child: Column(
+                                      children: [
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        if (newDate != '')
+                                          Center(
+                                            child: Card(
+                                              
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(10.0),
+                                                child: Text(newDate,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .labelSmall),
+                                              ),
                                             ),
                                           ),
+                                        ChatMessageCard(
+                                          select: selectedmsgs
+                                              .contains(messageItems[index].id),
+                                          roomId: widget.roomId,
+                                          messageItem: messageItems[index],
                                         ),
-                                      ChatMessageCard(
-                                        select: selectedmsgs
-                                            .contains(messageItems[index].id),
-                                        roomId: widget.roomId,
-                                        messageItem: messageItems[index],
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              })
-                          : Center(
-                              child: Center(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      FireData()
-                                          .sendMessage(widget.chatUser.id!,
-                                              'hi !', widget.roomId)
-                                          .then((value) {});
-                                    });
-                                  },
-                                  child: Card(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primaryContainer,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 50, vertical: 20),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            '👋',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .displayMedium,
-                                          ),
-                                          const SizedBox(
-                                            height: 16,
-                                          ),
-                                          Text(
-                                            'Say hi !',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyLarge,
-                                          ),
-                                        ],
+                                      ],
+                                    ),
+                                  );
+                                })
+                            : Center(
+                                child: Center(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        FireData()
+                                            .sendMessage(widget.chatUser.id!,
+                                                'hi !', widget.roomId)
+                                            .then((value) {});
+                                      });
+                                    },
+                                    child: Card(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primaryContainer,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 50, vertical: 20),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              '👋',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .displayMedium,
+                                            ),
+                                            const SizedBox(
+                                              height: 16,
+                                            ),
+                                            Text(
+                                              'Say hi !',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyLarge,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                    }
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: Card(
-                    child: TextField(
-                      controller: messageController,
-                      onTapOutside: (event) {
-                        setState(() {
-                          typing = false;
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        });
-                      },
-                      onTap: () {
-                        setState(() {
-                          typing = true;
-                        });
-                      },
-                      maxLines: 5,
-                      minLines: 1,
-                      decoration: InputDecoration(
-                        suffixIcon: typing
-                            ? null
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    onPressed: () async {
-                                      ImagePicker imagePicker = ImagePicker();
-                                      XFile? image =
-                                          await imagePicker.pickImage(
-                                        source: ImageSource.gallery,
-                                      );
-                                      if (image != null) {
-                                        FireStorage().sendImage(
-                                          file: File(image.path),
-                                          roomId: widget.roomId,
-                                          myUid: widget.chatUser.id!,
-                                        );
-                                      }
-                                    },
-                                    icon: const Icon(Iconsax.gallery),
-                                  ),
-                                ],
-                              ),
-                        border: InputBorder.none,
-                        hintText: 'Message',
-                        hintStyle: Theme.of(context).textTheme.bodySmall,
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
+                              );
+                      }
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Card(
+                      child: TextField(
+                        controller: messageController,
+                        onTapOutside: (event) {
+                          setState(() {
+                            typing = false;
+                            FocusManager.instance.primaryFocus?.unfocus();
+                          });
+                        },
+                        onTap: () {
+                          setState(() {
+                            typing = true;
+                          });
+                        },
+                        maxLines: 5,
+                        minLines: 1,
+                        decoration: InputDecoration(
+                          // suffixIcon: typing
+                          //     ? null
+                          //     : Row(
+                          //         mainAxisAlignment: MainAxisAlignment.end,
+                          //         mainAxisSize: MainAxisSize.min,
+                          //         children: [
+                          //           IconButton(
+                          //             onPressed: () async {
+                          //               ImagePicker imagePicker = ImagePicker();
+                          //               XFile? image =
+                          //                   await imagePicker.pickImage(
+                          //                 source: ImageSource.gallery,
+                          //               );
+                          //               if (image != null) {
+                          //                 FireStorage().sendImage(
+                          //                   file: File(image.path),
+                          //                   roomId: widget.roomId,
+                          //                   myUid: widget.chatUser.id!,
+                          //                 );
+                          //               }
+                          //             },
+                          //             icon: const Icon(Iconsax.gallery),
+                          //           ),
+                          //         ],
+                          //       ),
+                          border: InputBorder.none,
+                          hintText: 'Message',
+                          hintStyle: Theme.of(context).textTheme.bodySmall,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                IconButton.filled(
-                  onPressed: () {
-                    if (messageController.text.isNotEmpty) {
-                      FireData()
-                          .sendMessage(widget.chatUser.id!,
-                              messageController.text, widget.roomId)
-                          .then((value) {
-                        setState(() {
-                          messageController.clear();
+                  IconButton.filled(
+                    onPressed: () {
+                      if (messageController.text.isNotEmpty) {
+                        FireData()
+                            .sendMessage(widget.chatUser.id!,
+                                messageController.text, widget.roomId)
+                            .then((value) {
+                          setState(() {
+                            messageController.clear();
+                          });
                         });
-                      });
-                    }
-                  },
-                  icon: const Icon(Iconsax.send_1),
-                ),
-              ],
-            ),
-          ],
+                      }
+                    },
+                    icon: const Icon(Iconsax.send_1),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
